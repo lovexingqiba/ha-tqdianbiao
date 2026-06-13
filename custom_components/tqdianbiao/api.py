@@ -69,6 +69,7 @@ class TqApi:
             "uuid": UUID,
             "av": "2.1.0",
             "rv": "1.6.5|1.6.0|1.6.5",
+            "nv": 1,
             "app_token": None,
             "cookie": "",
         }
