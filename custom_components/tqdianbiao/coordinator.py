@@ -25,7 +25,7 @@ class TqCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     async def _async_update_data(self) -> dict[str, Any]:
         try:
-            self._api.login()
+            await self.hass.async_add_executor_job(self._api.login)
             return await self.hass.async_add_executor_job(self._api.fetch_pay_info)
         except Exception as exc:
             raise UpdateFailed(str(exc)) from exc
