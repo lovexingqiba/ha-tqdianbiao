@@ -47,6 +47,14 @@ SENSOR_DEFINITIONS: list[dict[str, Any]] = [
         "state_class": SensorStateClass.MEASUREMENT,
     },
     {
+        "key": "yesterday_fee",
+        "name": "昨日电费",
+        "device_class": SensorDeviceClass.MONETARY,
+        "unit": "CNY",
+        "icon": "mdi:cash-remove",
+        "state_class": SensorStateClass.MEASUREMENT,
+    },
+    {
         "key": "update_time",
         "name": "抄表时间",
         "device_class": SensorDeviceClass.TIMESTAMP,

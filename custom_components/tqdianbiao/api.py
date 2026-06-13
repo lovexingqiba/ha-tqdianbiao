@@ -42,6 +42,22 @@ def _parse_html(html: str) -> float:
     return float(match[0])
 
 
+def _to_iso(dt_str: str) -> str:
+    """将 '2026-06-13 00:00:12' 转为 '2026-06-13T00:00:00+08:00'"""
+    dt_str = dt_str.strip()
+    if not dt_str:
+        return ""
+    # 替换空格为 T
+    dt_str = dt_str.replace(" ", "T")
+    # 如果没有秒，补上 :00
+    if dt_str.count(":") == 1:
+        dt_str += ":00"
+    # 如果没有时区，加上东八区
+    if "+" not in dt_str and "Z" not in dt_str:
+        dt_str += "+08:00"
+    return dt_str
+
+
 class TqApi:
     def __init__(self, account: str, password: str) -> None:
         self._account = account
@@ -93,13 +109,7 @@ class TqApi:
         total_usage = float(dash["items"][2]["value"].split(" ")[0])
         update_time = dash["items"][0]["value"]
 
-        # queryRecord
-        qr_data = {**info, "app_token": self._token, "meterId": mid, "type": ptype, "selectItem": "1"}
-        qr_result = self._post("/App2/AppMain/queryRecord", qr_data)
-        rows = qr_result["data"]["rows"]
-        yesterday_usage = round(_parse_html(rows[0]["html"]) - _parse_html(rows[1]["html"]), 2)
-
-        # getDetailPayHistory
+        # getDetailPayHistory (先查，fee 计算可能要用)
         ph_data = {**info, "app_token": self._token, "customerId": cid, "meterId": mid,
                     "type": ptype, "offset": 0, "limit": 20}
         ph_result = self._post("/App2/AppMain/getDetailPayHistory", ph_data)
@@ -111,11 +121,29 @@ class TqApi:
             latest_amount = 0
             latest_date = ""
 
+        # queryRecord - 用电量 (selectItem=1)
+        qr_data = {**info, "app_token": self._token, "meterId": mid, "type": ptype, "selectItem": "1"}
+        qr_result = self._post("/App2/AppMain/queryRecord", qr_data)
+        rows = qr_result["data"]["rows"]
+        yesterday_usage = round(_parse_html(rows[0]["html"]) - _parse_html(rows[1]["html"]), 2)
+
+        # queryRecord - 电费 (selectItem=2)
+        qf_data = {**info, "app_token": self._token, "meterId": mid, "type": ptype, "selectItem": "2"}
+        qf_result = self._post("/App2/AppMain/queryRecord", qf_data)
+        fee_rows = qf_result["data"]["rows"]
+        now_fee = _parse_html(fee_rows[0]["html"])
+        yesterday_fee_val = _parse_html(fee_rows[1]["html"])
+        yesterday_fee = round(yesterday_fee_val - now_fee, 2)
+        if yesterday_fee < 0:
+            # 充过值，加上最近充值金额
+            yesterday_fee = round(yesterday_fee + latest_amount, 2)
+
         return {
             "balance": balance,
             "total_usage": total_usage,
-            "update_time": update_time,
+            "update_time": _to_iso(update_time),
             "yesterday_usage": yesterday_usage,
+            "yesterday_fee": yesterday_fee,
             "latest_pay_amount": latest_amount,
-            "latest_pay_date": latest_date,
+            "latest_pay_date": _to_iso(latest_date),
         }
