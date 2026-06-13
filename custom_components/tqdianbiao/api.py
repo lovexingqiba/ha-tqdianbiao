@@ -81,7 +81,10 @@ class TqApi:
         resp = self._session.post(
             url, data={"data": encoded, "_sign": sign}
         )
-        resp.raise_for_status()
+        if resp.status_code != 200:
+            raise ConnectionError(
+                f"HTTP {resp.status_code} {resp.reason} for {url}: {resp.text[:500]}"
+            )
         return _b64decode(resp.json()["data"])
 
     def login(self) -> str:
