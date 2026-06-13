@@ -14,24 +14,23 @@ from .api import TqApi
 _LOGGER = logging.getLogger(__name__)
 
 DOMAIN = "tqdianbiao"
+CONF_DEVICE_NAME = "device_name"
 
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_USERNAME): str,
         vol.Required(CONF_PASSWORD): str,
+        vol.Optional(CONF_DEVICE_NAME, default="乐和园电表"): str,
     }
 )
 
 
 class TqConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    """TQ 电表配置流。"""
-
     VERSION = 1
 
     async def async_step_user(
         self, user_input: dict | None = None
     ) -> FlowResult:
-        """用户添加集成时的步骤。"""
         errors: dict[str, str] = {}
 
         if user_input is not None:
@@ -45,12 +44,13 @@ class TqConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 _LOGGER.exception("登录失败: %s", exc)
                 errors["base"] = "cannot_connect"
             else:
+                device_name = user_input.get(CONF_DEVICE_NAME, "乐和园电表")
                 await self.async_set_unique_id(
                     f"tqdianbiao_{user_input[CONF_USERNAME]}"
                 )
                 self._abort_if_unique_id_configured()
                 return self.async_create_entry(
-                    title=f"TQ 电表 ({user_input[CONF_USERNAME]})",
+                    title=device_name,
                     data=user_input,
                 )
 
@@ -63,5 +63,4 @@ class TqConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_reauth(
         self, user_input: dict | None = None
     ) -> FlowResult:
-        """账号密码错误时重新认证。"""
         return await self.async_step_user(user_input)

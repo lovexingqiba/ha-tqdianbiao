@@ -32,7 +32,7 @@ git clone https://github.com/your/ha-tqdianbiao.git tqdianbiao
 
 ## 配置
 
-需要输入 TQ 电表 App 的登录手机号和密码。
+需要输入 TQ 电表 App 的登录手机号、密码，以及自定义设备名称。
 
 ## 实体
 

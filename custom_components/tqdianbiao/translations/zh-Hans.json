@@ -6,7 +6,8 @@
         "description": "输入你的 TQ 电表账号和密码",
         "data": {
           "username": "手机号",
-          "password": "密码"
+          "password": "密码",
+          "device_name": "设备名称"
         }
       }
     },

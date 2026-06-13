@@ -6,7 +6,8 @@
         "description": "Enter your TQ electricity meter account and password",
         "data": {
           "username": "Phone number",
-          "password": "Password"
+          "password": "Password",
+          "device_name": "Device name"
         }
       }
     },
