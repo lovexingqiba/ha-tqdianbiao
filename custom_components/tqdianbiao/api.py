@@ -18,7 +18,7 @@ import requests
 _LOGGER = logging.getLogger(__name__)
 
 HOST = "http://app.tqdianbiao.com"
-UUID = "43dfc475ab9e8233"
+UUID = "1a85667260340dc0"
 USER_AGENT = (
     "Mozilla/5.0 (Linux; Android 9; MI 9 Build/PQ3A.190605.08141016; wv) "
     "AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 "
@@ -68,8 +68,7 @@ class TqApi:
             "platform": "Android",
             "uuid": UUID,
             "av": "2.1.0",
-            "rv": "1.6.5|1.6.0|1.6.5",
-            "nv": 1,
+            "rv": "",
             "app_token": None,
             "cookie": "",
         }
