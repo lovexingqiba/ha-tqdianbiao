@@ -1,4 +1,4 @@
-"""TQ 电表数据协调器 - 最简版：只保存 token。"""
+"""TQ 电表数据协调器 - 测试 payInfo。"""
 from __future__ import annotations
 
 import logging
@@ -22,13 +22,10 @@ class TqCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
         super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=SCAN_INTERVAL)
         self._api = TqApi(entry.data[CONF_USERNAME], entry.data[CONF_PASSWORD])
-        self._token = ""
 
     async def _async_update_data(self) -> dict[str, Any]:
-        """每 24 小时重新登录一次刷新 token"""
         try:
-            token = await self.hass.async_add_executor_job(self._api.login)
-            self._token = token
-            return {"token": token}
+            self._api.login()
+            return await self.hass.async_add_executor_job(self._api.fetch_pay_info)
         except Exception as exc:
-            raise UpdateFailed(f"登录失败: {exc}") from exc
+            raise UpdateFailed(str(exc)) from exc

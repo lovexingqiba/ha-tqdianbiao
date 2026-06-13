@@ -1,4 +1,4 @@
-"""TQ 电表 API 封装 - 最简版：只登录。"""
+"""TQ 电表 API 封装 - 只登录 + payInfo。"""
 from __future__ import annotations
 
 import base64
@@ -45,23 +45,52 @@ class TqApi:
             "User-Agent": USER_AGENT,
             "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
         })
+        self._token = ""
 
     def login(self) -> str:
-        """POST /App2/AppAccount/login → 返回 token 字符串"""
         device_info = {
             "deviceType": "app", "platform": "Android", "uuid": UUID,
             "av": "2.1.0", "rv": "", "app_token": None, "cookie": "",
         }
         data = {**device_info, "username": self._account, "password": self._password}
-        url = HOST + "/App2/AppAccount/login"
-        encoded = _b64encode(data)
-        sign = _sign(data)
-        resp = self._session.post(url, data={"data": encoded, "_sign": sign})
+        resp = self._session.post(
+            HOST + "/App2/AppAccount/login",
+            data={"data": _b64encode(data), "_sign": _sign(data)},
+        )
         if resp.status_code != 200:
-            raise ConnectionError(
-                f"HTTP {resp.status_code}: {resp.text[:300]}"
-            )
+            raise ConnectionError(f"登录失败 HTTP {resp.status_code}: {resp.text[:300]}")
         result = _b64decode(resp.json()["data"])
-        token = result["data"]
-        _LOGGER.debug("登录成功, token=%.20s...", token)
-        return token
+        self._token = result["data"]
+        return self._token
+
+    def fetch_pay_info(self) -> dict:
+        """登录 → getUserlist → payInfo，返回原始 JSON"""
+        device_info = {
+            "deviceType": "app", "platform": "Android", "uuid": UUID,
+            "av": "2.1.0", "rv": "", "app_token": None, "cookie": "",
+        }
+
+        # getUserlist
+        ul_data = {**device_info, "app_token": self._token, "account": self._account}
+        ul_resp = self._session.post(
+            HOST + "/App2/AppMain/getUserlist",
+            data={"data": _b64encode(ul_data), "_sign": _sign(ul_data)},
+        )
+        if ul_resp.status_code != 200:
+            return {"error": f"getUserlist HTTP {ul_resp.status_code}", "body": ul_resp.text[:500]}
+        ul_result = _b64decode(ul_resp.json()["data"])
+        user = ul_result["data"][0]["items"][0]
+        mid, cid, ptype = user["id"], user["customerid"], user["partern_type"]
+
+        # payInfo
+        pi_data = {**device_info, "app_token": self._token,
+                    "customerId": cid, "meterId": mid, "type": ptype}
+        pi_resp = self._session.post(
+            HOST + "/App2/AppMain/payInfo",
+            data={"data": _b64encode(pi_data), "_sign": _sign(pi_data)},
+        )
+        return {
+            "status_code": pi_resp.status_code,
+            "body": pi_resp.text[:800],
+            "headers": dict(pi_resp.headers),
+        }

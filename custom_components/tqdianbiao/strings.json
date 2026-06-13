@@ -19,8 +19,8 @@
   },
   "entity": {
     "sensor": {
-      "token": {
-        "name": "Token"
+      "payinfo": {
+        "name": "PayInfo response"
       }
     }
   }
