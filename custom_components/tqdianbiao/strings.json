@@ -19,26 +19,9 @@
   },
   "entity": {
     "sensor": {
-      "balance": {
-        "name": "Balance"
-      },
-      "total_usage": {
-        "name": "Total usage"
-      },
-      "yesterday_usage": {
-        "name": "Yesterday usage"
-      },
-      "update_time": {
-        "name": "Last reading time"
-      },
-      "latest_pay_amount": {
-        "name": "Latest top-up amount"
-      },
-      "latest_pay_date": {
-        "name": "Latest top-up date"
+      "token": {
+        "name": "Token"
       }
-    },
-    "button": {
     }
   }
 }

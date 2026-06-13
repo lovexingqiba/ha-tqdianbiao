@@ -19,26 +19,9 @@
   },
   "entity": {
     "sensor": {
-      "balance": {
-        "name": "电费余额"
-      },
-      "total_usage": {
-        "name": "累计用电量"
-      },
-      "yesterday_usage": {
-        "name": "昨日用电量"
-      },
-      "update_time": {
-        "name": "抄表时间"
-      },
-      "latest_pay_amount": {
-        "name": "最近充值金额"
-      },
-      "latest_pay_date": {
-        "name": "最近充值日期"
+      "token": {
+        "name": "Token"
       }
-    },
-    "button": {
     }
   }
 }
