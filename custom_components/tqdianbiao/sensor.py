@@ -1,6 +1,7 @@
 """TQ 电表传感器实体，挂载到「乐和园电表」设备下。"""
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Any
 
 from homeassistant.components.sensor import (
@@ -11,7 +12,6 @@ from homeassistant.components.sensor import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import UnitOfEnergy
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -57,7 +57,7 @@ SENSOR_DEFINITIONS: list[dict[str, Any]] = [
     {
         "key": "update_time",
         "name": "抄表时间",
-        "device_class": SensorDeviceClass.TIMESTAMP,
+        "device_class": None,
         "unit": None,
         "icon": "mdi:clock-outline",
         "state_class": None,
@@ -73,7 +73,7 @@ SENSOR_DEFINITIONS: list[dict[str, Any]] = [
     {
         "key": "latest_pay_date",
         "name": "最近充值日期",
-        "device_class": SensorDeviceClass.TIMESTAMP,
+        "device_class": None,
         "unit": None,
         "icon": "mdi:calendar",
         "state_class": None,
