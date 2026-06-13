@@ -36,15 +36,9 @@
       },
       "latest_pay_date": {
         "name": "最近充值日期"
-      },
-      "meter_type": {
-        "name": "电表类型"
       }
     },
     "button": {
-      "refresh": {
-        "name": "刷新抄表"
-      }
     }
   }
 }

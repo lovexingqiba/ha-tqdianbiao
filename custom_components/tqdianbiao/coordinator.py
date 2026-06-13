@@ -50,7 +50,3 @@ class TqCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             return await self.hass.async_add_executor_job(self._fetch)
         except Exception as exc:
             raise UpdateFailed(f"获取电表数据失败: {exc}") from exc
-
-    def trigger_refresh(self) -> None:
-        """触发刷新抄表（按钮使用）。"""
-        self._api.trigger_refresh()

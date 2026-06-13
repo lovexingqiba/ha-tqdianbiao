@@ -67,14 +67,6 @@ SENSOR_DEFINITIONS: list[dict[str, Any]] = [
         "icon": "mdi:calendar",
         "state_class": None,
     },
-    {
-        "key": "meter_type",
-        "name": "电表类型",
-        "device_class": None,
-        "unit": None,
-        "icon": "mdi:meter-electric",
-        "state_class": None,
-    },
 ]
 
 

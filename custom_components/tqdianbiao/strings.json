@@ -36,15 +36,9 @@
       },
       "latest_pay_date": {
         "name": "Latest top-up date"
-      },
-      "meter_type": {
-        "name": "Meter type"
       }
     },
     "button": {
-      "refresh": {
-        "name": "Refresh reading"
-      }
     }
   }
 }

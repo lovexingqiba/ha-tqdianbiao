@@ -1,5 +1,8 @@
 """TQ 电表 API 封装。
 
+仅包含 leheyuan.py 中原有的 5 个接口：
+  login / getUserlist / payInfo / queryRecord / getDetailPayHistory
+
 加密协议：
   请求: base64(json) + md5(base64(json) + "__SIGN__" + uuid)
   响应: json → data 字段 → base64 解码 → json
@@ -62,7 +65,6 @@ class TqApi:
         self._meter_id: str | None = None
         self._customer_id: str | None = None
         self._partern_type: str | None = None
-        self._meter_type: str | None = None
         self._device_info: dict = {
             "deviceType": "app",
             "platform": "Android",
@@ -72,6 +74,8 @@ class TqApi:
             "app_token": None,
             "cookie": "",
         }
+
+    # ----- 加密通讯层（与 leheyuan.py 完全一致） -----
 
     def _post(self, uri: str, data: dict) -> dict:
         """发送加密 POST 请求并解密响应。"""
@@ -87,8 +91,10 @@ class TqApi:
             )
         return _b64decode(resp.json()["data"])
 
+    # ----- 第一个接口：登录 -----
+
     def login(self) -> str:
-        """登录并返回 token。"""
+        """POST /App2/AppAccount/login"""
         data = {**self._device_info, "username": self._account, "password": self._password}
         result = self._post("/App2/AppAccount/login", data)
         self._token = result["data"]
@@ -96,12 +102,13 @@ class TqApi:
         return self._token
 
     def _ensure_login(self) -> None:
-        """确保已登录。"""
         if not self._token:
             self.login()
 
+    # ----- 第二个接口：获取电表信息 -----
+
     def _ensure_user_info(self) -> None:
-        """确保已获取用户/电表信息。"""
+        """POST /App2/AppMain/getUserlist"""
         self._ensure_login()
         if self._meter_id:
             return
@@ -111,11 +118,11 @@ class TqApi:
         self._meter_id = user["id"]
         self._customer_id = user["customerid"]
         self._partern_type = user["partern_type"]
-        self._meter_type = user.get("type", "")
-        _LOGGER.debug("电表信息: meterId=%s, type=%s", self._meter_id, self._meter_type)
+        _LOGGER.debug("meterId=%s, customerId=%s, type=%s",
+                       self._meter_id, self._customer_id, self._partern_type)
 
     def _simple_post(self, uri: str, extra: dict) -> dict:
-        """带通用参数的 POST 请求。"""
+        """带通用参数（deviceInfo + token）的 POST 请求。"""
         self._ensure_user_info()
         data = {
             **self._device_info,
@@ -124,8 +131,10 @@ class TqApi:
         }
         return self._post(uri, data)
 
+    # ----- 第三个接口：缴费信息 -----
+
     def fetch_pay_info(self) -> dict[str, Any]:
-        """获取缴费信息（余额、总用电量、更新时间）。"""
+        """POST /App2/AppMain/payInfo"""
         result = self._simple_post("/App2/AppMain/payInfo", {
             "customerId": self._customer_id,
             "meterId": self._meter_id,
@@ -138,8 +147,10 @@ class TqApi:
             "update_time": dashboard["items"][0]["value"],
         }
 
+    # ----- 第四个接口：历史记录 -----
+
     def fetch_yesterday_usage(self) -> float:
-        """获取昨日用电量。"""
+        """POST /App2/AppMain/queryRecord (selectItem=1 电量)"""
         result = self._simple_post("/App2/AppMain/queryRecord", {
             "meterId": self._meter_id,
             "type": self._partern_type,
@@ -150,14 +161,16 @@ class TqApi:
         yesterday_kwh = _parse_html(rows[1]["html"])
         return round(now_kwh - yesterday_kwh, 2)
 
+    # ----- 第五个接口：充值记录 -----
+
     def fetch_latest_pay(self) -> dict[str, Any]:
-        """获取最近一次充值记录。"""
+        """POST /App2/AppMain/getDetailPayHistory"""
         result = self._simple_post("/App2/AppMain/getDetailPayHistory", {
             "customerId": self._customer_id,
             "meterId": self._meter_id,
             "type": self._partern_type,
             "offset": 0,
-            "limit": 1,
+            "limit": 20,
         })
         rows = result.get("data", {}).get("rows", [])
         if rows:
@@ -167,23 +180,10 @@ class TqApi:
             }
         return {"amount": 0, "date": ""}
 
-    def get_meter_type(self) -> str:
-        """获取电表类型。"""
-        self._ensure_user_info()
-        return self._meter_type or ""
-
-    def trigger_refresh(self) -> None:
-        """触发远程刷新抄表（queryNow，1 分钟限 1 次）。"""
-        result = self._simple_post("/App2/AppMain/queryNow", {
-            "meterId": self._meter_id,
-            "type": self._partern_type,
-            "selectItem": "1",
-        })
-        if result.get("state") == 1:
-            raise Exception(result.get("msg", "刷新失败"))
+    # ----- 批量获取 -----
 
     def fetch_all(self) -> dict[str, Any]:
-        """获取所有数据（一次调用所有接口）。"""
+        """依次调用 login → getUserlist → payInfo → queryRecord → getDetailPayHistory"""
         pay = self.fetch_pay_info()
         yesterday = self.fetch_yesterday_usage()
         latest = self.fetch_latest_pay()
@@ -194,5 +194,4 @@ class TqApi:
             "yesterday_usage": yesterday,
             "latest_pay_amount": latest["amount"],
             "latest_pay_date": latest["date"],
-            "meter_type": self.get_meter_type(),
         }
