@@ -23,18 +23,10 @@ class TqCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=SCAN_INTERVAL)
         self._api = TqApi(entry.data[CONF_USERNAME], entry.data[CONF_PASSWORD])
 
-    def _fetch(self) -> dict[str, Any]:
-        """同步执行所有 API 调用（在线程池中运行）。"""
-        try:
-            return self._api.fetch_all()
-        except Exception as exc:
-            if "token" in str(exc).lower():
-                self._api.login()
-                return self._api.fetch_all()
-            raise exc
-
     async def _async_update_data(self) -> dict[str, Any]:
+        """先登录（executor），再获取数据（executor），分两次调用。"""
         try:
-            return await self.hass.async_add_executor_job(self._fetch)
+            await self.hass.async_add_executor_job(self._api.login)
+            return await self.hass.async_add_executor_job(self._api.fetch_all)
         except Exception as exc:
             raise UpdateFailed(str(exc)) from exc
