@@ -57,6 +57,7 @@ class TqApi:
         self._account = account
         self._password = password
         self._session = requests.Session()
+        self._session.trust_env = False  # 忽略 HTTP_PROXY 环境变量
         self._session.headers.update({
             "User-Agent": USER_AGENT,
             "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
