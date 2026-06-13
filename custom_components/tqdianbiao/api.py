@@ -43,16 +43,20 @@ def _parse_html(html: str) -> float:
 
 
 def _to_iso(dt_str: str) -> str:
-    """将 '2026-06-13 00:00:12' 转为 '2026-06-13T00:00:00+08:00'"""
+    """将 '2026-06-13 00:00:12' 或 '2026-06-03' 转为 ISO 8601 格式"""
     dt_str = dt_str.strip()
     if not dt_str:
         return ""
-    # 替换空格为 T
     dt_str = dt_str.replace(" ", "T")
-    # 如果没有秒，补上 :00
-    if dt_str.count(":") == 1:
+    # 没有时间部分，补上 00:00:00
+    if "T" not in dt_str or dt_str.count(":") == 0:
+        dt_str = (dt_str.split("+")[0].split("-")[0:3] if "+" in dt_str
+                  else dt_str.split("T")[0] if "T" in dt_str
+                  else dt_str) + "T00:00:00"
+    # 只有时:分，补:00
+    elif dt_str.count(":") == 1:
         dt_str += ":00"
-    # 如果没有时区，加上东八区
+    # 没有时区，加上东八区
     if "+" not in dt_str and "Z" not in dt_str:
         dt_str += "+08:00"
     return dt_str

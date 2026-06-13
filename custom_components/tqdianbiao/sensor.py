@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from datetime import datetime
 from typing import Any
 
 from homeassistant.components.sensor import (
@@ -57,7 +58,7 @@ SENSOR_DEFINITIONS: list[dict[str, Any]] = [
     {
         "key": "update_time",
         "name": "抄表时间",
-        "device_class": None,
+        "device_class": SensorDeviceClass.TIMESTAMP,
         "unit": None,
         "icon": "mdi:clock-outline",
         "state_class": None,
@@ -73,7 +74,7 @@ SENSOR_DEFINITIONS: list[dict[str, Any]] = [
     {
         "key": "latest_pay_date",
         "name": "最近充值日期",
-        "device_class": None,
+        "device_class": SensorDeviceClass.TIMESTAMP,
         "unit": None,
         "icon": "mdi:calendar",
         "state_class": None,
@@ -121,4 +122,12 @@ class TqSensor(CoordinatorEntity[TqCoordinator], SensorEntity):
     def native_value(self):
         if self.coordinator.data is None:
             return None
-        return self.coordinator.data.get(self._key)
+        value = self.coordinator.data.get(self._key)
+        if value is None:
+            return None
+        if self._attr_device_class is SensorDeviceClass.TIMESTAMP and isinstance(value, str):
+            try:
+                return datetime.fromisoformat(value)
+            except (ValueError, TypeError):
+                pass
+        return value
