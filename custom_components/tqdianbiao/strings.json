@@ -1,0 +1,50 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "TQ Electricity Meter",
+        "description": "Enter your TQ electricity meter account and password",
+        "data": {
+          "username": "Phone number",
+          "password": "Password"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Login failed, please check account and password"
+    },
+    "abort": {
+      "already_configured": "This account is already configured"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "balance": {
+        "name": "Balance"
+      },
+      "total_usage": {
+        "name": "Total usage"
+      },
+      "yesterday_usage": {
+        "name": "Yesterday usage"
+      },
+      "update_time": {
+        "name": "Last reading time"
+      },
+      "latest_pay_amount": {
+        "name": "Latest top-up amount"
+      },
+      "latest_pay_date": {
+        "name": "Latest top-up date"
+      },
+      "meter_type": {
+        "name": "Meter type"
+      }
+    },
+    "button": {
+      "refresh": {
+        "name": "Refresh reading"
+      }
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "TQ 电表",
+  "render_readme": true,
+  "homeassistant": "2024.1.0",
+  "country": "CN"
+}
