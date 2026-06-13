@@ -1,6 +1,6 @@
 # TQ 电表 — Home Assistant 自定义集成
 
-将 TQ 电表（天泉电表 `app.tqdianbiao.com`）的数据接入 Home Assistant。
+将 TQ 电表（拓强电表 `app.tqdianbiao.com`）的数据接入 Home Assistant。
 
 ## 功能
 
